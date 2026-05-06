@@ -1,0 +1,209 @@
+version: "3.9"
+
+services:
+  # ─── Databases ────────────────────────────────────────────
+  db-auth:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-auth-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  db-user:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-user-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  db-club:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: club_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-club-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  db-booking:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-booking-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  db-event:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-event-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  db-notification:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - db-notification-data:/var/lib/postgresql/data
+    networks: [tennis-net]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+
+  # ─── Microservices ────────────────────────────────────────
+  auth-service:
+    build: ./services/auth-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-auth:5432/auth_db
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+      NOTIFICATION_SERVICE_URL: http://notification-service:8006
+    depends_on:
+      db-auth:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8001:8001"
+
+  user-service:
+    build: ./services/user-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-user:5432/user_db
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+    depends_on:
+      db-user:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8002:8002"
+
+  club-service:
+    build: ./services/club-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-club:5432/club_db
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+    depends_on:
+      db-club:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8003:8003"
+
+  booking-service:
+    build: ./services/booking-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-booking:5432/booking_db
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+      NOTIFICATION_SERVICE_URL: http://notification-service:8006
+      CLUB_SERVICE_URL: http://club-service:8003
+    depends_on:
+      db-booking:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8004:8004"
+
+  event-service:
+    build: ./services/event-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-event:5432/event_db
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+      NOTIFICATION_SERVICE_URL: http://notification-service:8006
+    depends_on:
+      db-event:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8005:8005"
+
+  notification-service:
+    build: ./services/notification-service
+    environment:
+      DATABASE_URL: postgresql+asyncpg://postgres:postgres@db-notification:5432/notification_db
+      SMTP_USER: tysiaknastia@gmail.com
+      SMTP_PASS: "jxbd qmqr bhoh jiqe"
+      SMTP_HOST: smtp.gmail.com
+      SMTP_PORT: "587"
+      FRONTEND_URL: http://localhost:5173
+    depends_on:
+      db-notification:
+        condition: service_healthy
+    networks: [tennis-net]
+    ports:
+      - "8006:8006"
+
+  gateway:
+    build: ./gateway
+    environment:
+      AUTH_SERVICE_URL: http://auth-service:8001
+      USER_SERVICE_URL: http://user-service:8002
+      CLUB_SERVICE_URL: http://club-service:8003
+      BOOKING_SERVICE_URL: http://booking-service:8004
+      EVENT_SERVICE_URL: http://event-service:8005
+      NOTIFICATION_SERVICE_URL: http://notification-service:8006
+      JWT_SECRET: my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz
+    depends_on:
+      - auth-service
+      - user-service
+      - club-service
+      - booking-service
+      - event-service
+      - notification-service
+    networks: [tennis-net]
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - gateway
+    networks: [tennis-net]
+
+networks:
+  tennis-net:
+    driver: bridge
+
+volumes:
+  db-auth-data:
+  db-user-data:
+  db-club-data:
+  db-booking-data:
+  db-event-data:
+  db-notification-data:
