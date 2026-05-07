@@ -97,3 +97,26 @@ async def delete_court(club_id: int, court_id: int, db: AsyncSession = Depends(g
     if court:
         court.is_active = False
         await db.commit()
+
+
+@router.post("/{club_id}/membership")
+async def pay_membership(club_id: int, payment_data: dict, db: AsyncSession = Depends(get_db)):
+    club = await db.get(Club, club_id)
+    if not club:
+        raise HTTPException(404, "Club not found")
+    
+    # Simulate membership payment processing
+    card_number = payment_data.get("card_number", "")
+    card_expiry = payment_data.get("card_expiry", "")
+    card_cvv = payment_data.get("card_cvv", "")
+    card_name = payment_data.get("card_name", "")
+    
+    # In real implementation, you would integrate with payment gateway here
+    # For now, just simulate success
+    return {
+        "status": "success",
+        "message": "Membership payment processed successfully",
+        "club_id": club_id,
+        "card_last4": card_number[-4:] if len(card_number) >= 4 else "****",
+        "membership_valid_until": "2025-12-31"
+    }
