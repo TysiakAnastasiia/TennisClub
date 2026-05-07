@@ -1,50 +1,77 @@
-import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
-import { clubApi, bookingApi } from '../api'
-import { useAuthStore } from '../store/authStore'
-import toast from 'react-hot-toast'
-import { format, addHours, startOfHour } from 'date-fns'
+import { addHours, format, startOfHour } from "date-fns";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate, useParams } from "react-router-dom";
+import { bookingApi, clubApi } from "../api";
+import { useAuthStore } from "../store/authStore";
 
-const surfaceLabel = { clay: 'Глина 🟫', hard: 'Хард 🔵', grass: 'Трава 🟢', indoor: 'Критий 🏠' }
+const surfaceLabel = {
+  clay: "Глина 🟫",
+  hard: "Хард 🔵",
+  grass: "Трава 🟢",
+  indoor: "Критий 🏠",
+};
 
 export default function ClubDetail() {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const { user } = useAuthStore()
-  const [club, setClub]           = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [selectedCourt, setSelectedCourt] = useState(null)
-  const [showModal, setShowModal] = useState(false)
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const { user } = useAuthStore();
+  const [club, setClub] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedCourt, setSelectedCourt] = useState(null);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
-    clubApi.get(id)
-      .then(r => setClub(r.data))
-      .catch(() => toast.error('Клуб не знайдено'))
-      .finally(() => setLoading(false))
-  }, [id])
+    clubApi
+      .get(id)
+      .then((r) => setClub(r.data))
+      .catch(() => toast.error("Клуб не знайдено"))
+      .finally(() => setLoading(false));
+  }, [id]);
 
   const openBooking = (court) => {
-    if (!user) { navigate('/login'); return }
-    setSelectedCourt(court)
-    setShowModal(true)
-  }
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+    setSelectedCourt(court);
+    setShowModal(true);
+  };
 
-  if (loading) return <div className="page-wrapper"><div className="loading-center"><div className="spinner" /></div></div>
-  if (!club)   return <div className="page-wrapper"><p>Клуб не знайдено</p></div>
+  if (loading)
+    return (
+      <div className="page-wrapper">
+        <div className="loading-center">
+          <div className="spinner" />
+        </div>
+      </div>
+    );
+  if (!club)
+    return (
+      <div className="page-wrapper">
+        <p>Клуб не знайдено</p>
+      </div>
+    );
 
-  const courts = club.courts?.filter(c => c.is_active) || []
+  const courts = club.courts?.filter((c) => c.is_active) || [];
 
   return (
     <div className="page-wrapper">
       {/* Hero banner */}
       <div className="club-hero">
-        {club.image_url
-          ? <img src={club.image_url} alt={club.name} className="club-hero-img" />
-          : <div className="club-hero-placeholder">🎾</div>
-        }
+        {club.image_url ? (
+          <img src={club.image_url} alt={club.name} className="club-hero-img" />
+        ) : (
+          <div className="club-hero-placeholder">🎾</div>
+        )}
         <div className="club-hero-overlay" />
         <div className="club-hero-content">
-          <button className="btn btn-ghost btn-sm back-btn" onClick={() => navigate('/clubs')}>← Назад</button>
+          <button
+            className="btn btn-ghost btn-sm back-btn"
+            onClick={() => navigate("/clubs")}
+          >
+            ← Назад
+          </button>
           <h1 className="club-hero-title">{club.name}</h1>
           <p className="club-hero-addr">📍 {club.address}</p>
         </div>
@@ -52,7 +79,9 @@ export default function ClubDetail() {
 
       {/* Info */}
       <div className="club-info-row">
-        {club.description && <p className="club-full-desc">{club.description}</p>}
+        {club.description && (
+          <p className="club-full-desc">{club.description}</p>
+        )}
         <div className="club-contacts">
           {club.phone && <span>📞 {club.phone}</span>}
           {club.email && <span>✉️ {club.email}</span>}
@@ -62,21 +91,35 @@ export default function ClubDetail() {
       {/* Courts */}
       <h2 className="courts-heading">Корти</h2>
       {!club.is_active && (
-        <div style={{ background:'#fee2e2', border:'1px solid #fca5a5', borderRadius:'var(--radius-sm)', padding:'12px 16px', marginBottom:20, color:'#991b1b', fontSize:14 }}>
+        <div
+          style={{
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            borderRadius: "var(--radius-sm)",
+            padding: "12px 16px",
+            marginBottom: 20,
+            color: "#991b1b",
+            fontSize: 14,
+          }}
+        >
           ⚠️ Цей клуб наразі неактивний. Бронювання тимчасово недоступне.
         </div>
       )}
       {courts.length === 0 ? (
-        <div className="empty-state"><p>Кортів поки немає</p></div>
+        <div className="empty-state">
+          <p>Кортів поки немає</p>
+        </div>
       ) : (
         <div className="courts-grid">
-          {courts.map(court => (
+          {courts.map((court) => (
             <div key={court.id} className="court-card card">
               <div className="court-card-body">
                 <div>
                   <h3 className="court-name">{court.name}</h3>
                   <p className="court-surface">{surfaceLabel[court.surface]}</p>
-                  {court.is_indoor && <span className="badge badge-emerald mt-2">Критий</span>}
+                  {court.is_indoor && (
+                    <span className="badge badge-emerald mt-2">Критий</span>
+                  )}
                 </div>
                 <div className="court-price-block">
                   <span className="court-price">{court.price_per_hour}</span>
@@ -85,7 +128,11 @@ export default function ClubDetail() {
               </div>
               <button
                 className="btn btn-primary w-full"
-                style={{ borderRadius:'0 0 12px 12px', margin:0, justifyContent:'center' }}
+                style={{
+                  borderRadius: "0 0 12px 12px",
+                  margin: 0,
+                  justifyContent: "center",
+                }}
                 onClick={() => openBooking(court)}
                 disabled={!club.is_active}
               >
@@ -101,7 +148,10 @@ export default function ClubDetail() {
           court={selectedCourt}
           clubId={club.id}
           onClose={() => setShowModal(false)}
-          onDone={() => { setShowModal(false); navigate('/bookings') }}
+          onDone={() => {
+            setShowModal(false);
+            navigate("/bookings");
+          }}
         />
       )}
 
@@ -129,23 +179,31 @@ export default function ClubDetail() {
         .court-price-unit { font-size:12px; color:var(--gray-400); }
       `}</style>
     </div>
-  )
+  );
 }
 
 function BookingModal({ court, clubId, onClose, onDone }) {
-  const now = startOfHour(addHours(new Date(), 1))
-  const [startTime, setStartTime] = useState(format(now, "yyyy-MM-dd'T'HH:mm"))
-  const [endTime, setEndTime]     = useState(format(addHours(now, 1), "yyyy-MM-dd'T'HH:mm"))
-  const [notes, setNotes]         = useState('')
-  const [loading, setLoading]     = useState(false)
+  const now = startOfHour(addHours(new Date(), 1));
+  const [startTime, setStartTime] = useState(format(now, "yyyy-MM-dd'T'HH:mm"));
+  const [endTime, setEndTime] = useState(
+    format(addHours(now, 1), "yyyy-MM-dd'T'HH:mm")
+  );
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const hours = (new Date(endTime) - new Date(startTime)) / 3600000
-  const total = Math.max(0, hours * court.price_per_hour)
+  const hours = (new Date(endTime) - new Date(startTime)) / 3600000;
+  const total = Math.max(0, hours * court.price_per_hour);
 
   const submit = async () => {
-    if (hours < 1) { toast.error('Мінімум 1 година'); return }
-    if (new Date(startTime) <= new Date()) { toast.error('Час бронювання має бути у майбутньому'); return }
-    setLoading(true)
+    if (hours < 1) {
+      toast.error("Мінімум 1 година");
+      return;
+    }
+    if (new Date(startTime) <= new Date()) {
+      toast.error("Час бронювання має бути у майбутньому");
+      return;
+    }
+    setLoading(true);
     try {
       await bookingApi.create({
         court_id: court.id,
@@ -153,45 +211,96 @@ function BookingModal({ court, clubId, onClose, onDone }) {
         start_time: new Date(startTime).toISOString(),
         end_time: new Date(endTime).toISOString(),
         notes,
-      })
-      toast.success('Бронювання підтверджено! Підтвердження на email 🎾')
-      onDone()
+      });
+      toast.success("Бронювання підтверджено! Підтвердження на email 🎾");
+      onDone();
     } catch (err) {
-      toast.error(err.response?.data?.detail || 'Помилка бронювання')
-    } finally { setLoading(false) }
-  }
+      toast.error(err.response?.data?.detail || "Помилка бронювання");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const minDate = format(new Date(), "yyyy-MM-dd'T'HH:mm")
+  const minDate = format(new Date(), "yyyy-MM-dd'T'HH:mm");
 
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()}>
+      <div className="modal" onClick={(e) => e.stopPropagation()}>
         <h2 className="modal-title">Бронювання · {court.name}</h2>
         <div className="form-group">
           <label className="label">Початок</label>
-          <input className="input-field" type="datetime-local" value={startTime} min={minDate}
-            onChange={e => setStartTime(e.target.value)} />
+          <input
+            className="input-field"
+            type="datetime-local"
+            value={startTime}
+            min={minDate}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
         </div>
         <div className="form-group">
           <label className="label">Кінець</label>
-          <input className="input-field" type="datetime-local" value={endTime} min={startTime}
-            onChange={e => setEndTime(e.target.value)} />
+          <input
+            className="input-field"
+            type="datetime-local"
+            value={endTime}
+            min={startTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
         </div>
         <div className="form-group">
           <label className="label">Нотатки (необов'язково)</label>
-          <input className="input-field" type="text" placeholder="Наприклад: парна гра"
-            value={notes} onChange={e => setNotes(e.target.value)} />
+          <input
+            className="input-field"
+            type="text"
+            placeholder="Наприклад: парна гра"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+          />
         </div>
         {hours > 0 && (
           <div className="booking-total">
-            <span>{hours.toFixed(1)} год × {court.price_per_hour} грн</span>
+            <span>
+              {hours.toFixed(1)} год × {court.price_per_hour} грн
+            </span>
             <span className="booking-total-price">{total.toFixed(0)} грн</span>
           </div>
         )}
+        <div
+          className="booking-notice"
+          style={{
+            background: "#fef3c7",
+            border: "1px solid #fbbf24",
+            borderRadius: "var(--radius-sm)",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            fontSize: "13px",
+            color: "#92400e",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <span style={{ fontSize: "16px" }}>ℹ️</span>
+          <span>
+            Для підтвердження бронювання потрібно оплатити не пізніше ніж за 24
+            години до початку
+          </span>
+        </div>
         <div className="flex gap-3 mt-4">
-          <button className="btn btn-outline w-full" style={{ justifyContent:'center' }} onClick={onClose}>Скасувати</button>
-          <button className="btn btn-primary w-full" style={{ justifyContent:'center' }} onClick={submit} disabled={loading}>
-            {loading ? 'Бронюємо...' : 'Підтвердити'}
+          <button
+            className="btn btn-outline w-full"
+            style={{ justifyContent: "center" }}
+            onClick={onClose}
+          >
+            Скасувати
+          </button>
+          <button
+            className="btn btn-primary w-full"
+            style={{ justifyContent: "center" }}
+            onClick={submit}
+            disabled={loading}
+          >
+            {loading ? "Бронюємо..." : "Підтвердити"}
           </button>
         </div>
         <style>{`
@@ -200,5 +309,5 @@ function BookingModal({ court, clubId, onClose, onDone }) {
         `}</style>
       </div>
     </div>
-  )
+  );
 }

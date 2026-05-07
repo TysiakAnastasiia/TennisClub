@@ -101,10 +101,36 @@ class EmailSender:
   <strong>Кінець:</strong> {end_time}<br>
   <strong>Сума:</strong> {total_price} грн
 </div>
-<p>Будемо чекати вас на корті! Якщо потрібно скасувати — зробіть це в особистому кабінеті.</p>
+<p>Будемо чекати вас на корті! Для підтвердження бронювання не пізніше ніж за 12 годин. Якщо потрібно скасувати — зробіть це в особистому кабінеті.</p>
 <a href="{FRONTEND_URL}/bookings" class="btn">Мої бронювання</a>
 """
         await self.send(to, f"Бронювання #{booking_id} підтверджено", self._base_template("Бронювання підтверджено ✅", content))
+
+    async def send_booking_paid(self, to: str, booking_id: int, total_price: float):
+        content = f"""
+<p>Ваше бронювання успішно оплачено!</p>
+<div class="info-box">
+  <strong>Бронювання #{booking_id}</strong><br>
+  <strong>Сума оплати:</strong> {total_price} грн<br>
+  <strong>Статус:</strong> Оплачено ✅
+</div>
+<p>Дякуємо за оплату! Ми чекаємо вас на корті в зазначений час.</p>
+<a href="{FRONTEND_URL}/bookings" class="btn">Мої бронювання</a>
+"""
+        await self.send(to, f"Бронювання #{booking_id} оплачено", self._base_template("Оплату отримано 💳", content))
+
+    async def send_booking_refunded(self, to: str, booking_id: int, total_price: float):
+        content = f"""
+<p>Ваше бронювання скасовано, а кошти повернуто.</p>
+<div class="info-box">
+  <strong>Бронювання #{booking_id}</strong><br>
+  <strong>Сума повернення:</strong> {total_price} грн<br>
+  <strong>Статус:</strong> Скасовано та повернуто
+</div>
+<p>Кошти будуть повернуті на вашу картку протягом 3-5 робочих днів.</p>
+<a href="{FRONTEND_URL}/bookings" class="btn">Мої бронювання</a>
+"""
+        await self.send(to, f"Повернення коштів за бронювання #{booking_id}", self._base_template("Повернення коштів 💰", content))
 
     async def send_event_registration(self, to: str, event_title: str, start_time: str):
         content = f"""
