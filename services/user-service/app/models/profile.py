@@ -11,7 +11,7 @@ class UserProfile(Base):
     last_name   = Column(String(80), nullable=True)
     phone       = Column(String(30), nullable=True)
     bio         = Column(Text, nullable=True)
-    avatar_url  = Column(String(500), nullable=True)
+    avatar_url  = Column(Text, nullable=True)
     updated_at  = Column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
 
 class ClubMembership(Base):
