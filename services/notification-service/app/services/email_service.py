@@ -33,6 +33,7 @@ class EmailSender:
             username=SMTP_USER,
             password=SMTP_PASS,
             start_tls=True,
+            timeout=10,
         )
 
     def _base_template(self, title: str, content: str) -> str:
@@ -119,3 +120,27 @@ class EmailSender:
 
 
 email_sender = EmailSender()
+
+    async def send_booking_paid(self, to: str, booking_id: int, total_price: float):
+        content = f"""
+<p>Оплату підтверджено! Ваше бронювання #{booking_id} оплачено.</p>
+<div class="info-box">
+  <strong>Сума:</strong> {total_price} грн<br>
+  <strong>Статус:</strong> Оплачено ✅
+</div>
+<p>Бажаємо приємної гри! 🎾</p>
+<a href="{FRONTEND_URL}/bookings" class="btn">Мої бронювання</a>
+"""
+        await self.send(to, f"Оплата бронювання #{booking_id}", self._base_template("Оплату підтверджено 💳", content))
+
+    async def send_booking_refunded(self, to: str, booking_id: int, total_price: float):
+        content = f"""
+<p>Ваше бронювання #{booking_id} скасовано та кошти повернуто.</p>
+<div class="info-box">
+  <strong>Повернено:</strong> {total_price} грн<br>
+  <strong>Статус:</strong> Повернення коштів ✅
+</div>
+<p>Кошти надійдуть протягом 3–5 робочих днів.</p>
+<a href="{FRONTEND_URL}/clubs" class="btn">Знайти новий корт</a>
+"""
+        await self.send(to, f"Повернення коштів — бронювання #{booking_id}", self._base_template("Кошти повернуто 💰", content))

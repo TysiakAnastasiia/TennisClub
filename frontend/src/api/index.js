@@ -25,47 +25,58 @@ api.interceptors.response.use(
 
 export default api
 
-// ── Auth ──────────────────────────────────────────────────
+// Auth
 export const authApi = {
-  register: (data) => api.post('/auth/register', data),
-  login:    (data) => api.post('/auth/login', data),
-  activate: (id)   => api.post(`/auth/activate/${id}`),
-  listUsers:()     => api.get('/auth/users'),
+  register:   (data)        => api.post('/auth/register', data),
+  login:      (data)        => api.post('/auth/login', data),
+  activate:   (id)          => api.post(`/auth/activate/${id}`),
+  deactivate: (id)          => api.post(`/auth/deactivate/${id}`),
+  listUsers:  ()            => api.get('/auth/users'),
+  updateRole: (id, role)    => api.patch(`/auth/users/${id}/role`, { role }),
+  updateUser: (id, data)    => api.put(`/auth/users/${id}`, data),
 }
 
-// ── Clubs ─────────────────────────────────────────────────
+// Clubs
 export const clubApi = {
-  list:        ()              => api.get('/clubs'),
-  get:         (id)            => api.get(`/clubs/${id}`),
-  create:      (data)          => api.post('/clubs', data),
-  update:      (id, data)      => api.put(`/clubs/${id}`, data),
-  delete:      (id)            => api.delete(`/clubs/${id}`),
-  listCourts:  (clubId)        => api.get(`/clubs/${clubId}/courts`),
-  addCourt:    (clubId, data)  => api.post(`/clubs/${clubId}/courts`, data),
-  deleteCourt: (clubId, cId)   => api.delete(`/clubs/${clubId}/courts/${cId}`),
+  list:        ()                    => api.get('/clubs'),
+  get:         (id)                  => api.get(`/clubs/${id}`),
+  create:      (data)                => api.post('/clubs', data),
+  update:      (id, data)            => api.put(`/clubs/${id}`, data),
+  deactivate:  (id)                  => api.delete(`/clubs/${id}`),
+  listCourts:  (clubId)              => api.get(`/clubs/${clubId}/courts`),
+  addCourt:    (clubId, data)        => api.post(`/clubs/${clubId}/courts`, data),
+  updateCourt: (clubId, cId, data)   => api.put(`/clubs/${clubId}/courts/${cId}`, data),
+  deleteCourt: (clubId, cId)         => api.delete(`/clubs/${clubId}/courts/${cId}`),
 }
 
-// ── Bookings ──────────────────────────────────────────────
+// Bookings
 export const bookingApi = {
   list:          ()     => api.get('/bookings'),
   create:        (data) => api.post('/bookings', data),
   cancel:        (id)   => api.delete(`/bookings/${id}`),
   courtBookings: (cId)  => api.get(`/bookings/court/${cId}`),
+  pay:           (id)   => api.post(`/bookings/${id}/pay`),
 }
 
-// ── Events ────────────────────────────────────────────────
+// Events
 export const eventApi = {
-  list:          ()      => api.get('/events'),
-  get:           (id)    => api.get(`/events/${id}`),
-  create:        (data)  => api.post('/events', data),
-  delete:        (id)    => api.delete(`/events/${id}`),
-  register:      (id)    => api.post(`/events/${id}/register`),
-  unregister:    (id)    => api.delete(`/events/${id}/register`),
-  participants:  (id)    => api.get(`/events/${id}/participants`),
+  list:            ()     => api.get('/events'),
+  get:             (id)   => api.get(`/events/${id}`),
+  create:          (data) => api.post('/events', data),
+  deactivate:      (id)   => api.delete(`/events/${id}`),
+  register:        (id)   => api.post(`/events/${id}/register`),
+  unregister:      (id)   => api.delete(`/events/${id}/register`),
+  participants:    (id)   => api.get(`/events/${id}/participants`),
+  myRegistrations: ()     => api.get('/events/my-registrations'),
 }
 
-// ── Users ─────────────────────────────────────────────────
+// Users/Profile
 export const userApi = {
-  me:     ()     => api.get('/users/me'),
-  update: (data) => api.put('/users/me', data),
+  me:            ()                      => api.get('/users/me'),
+  update:        (data)                  => api.put('/users/me', data),
+  getById:       (id)                    => api.get(`/users/by-auth/${id}`),
+  list:          ()                      => api.get('/users'),
+  joinClub:      (clubId, body)          => api.post(`/users/membership/${clubId}`, body),
+  leaveClub:     (clubId)               => api.delete(`/users/membership/${clubId}`),
+  getMembership: ()                      => api.get('/users/membership'),
 }

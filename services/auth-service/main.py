@@ -23,10 +23,10 @@ async def startup():
         admin = await db.scalar(select(User).where(User.email == "admin@tennis.com"))
         if not admin:
             users_seed = [
-                User(email="admin@tennis.com",   hashed_password=pwd_ctx.hash("Admin123!"[:72]),   role=Role.admin,  is_active=True),
-                User(email="staff@tennis.com",   hashed_password=pwd_ctx.hash("Staff123!"[:72]),   role=Role.staff,  is_active=True),
-                User(email="client@tennis.com",  hashed_password=pwd_ctx.hash("Client123!"[:72]),  role=Role.client, is_active=True),
-                User(email="client2@tennis.com", hashed_password=pwd_ctx.hash("Client123!"[:72]),  role=Role.client, is_active=True),
+                User(email="admin@tennis.com",   hashed_password=pwd_ctx.hash("Admin123!"),   role=Role.admin,  is_active=True),
+                User(email="staff@tennis.com",   hashed_password=pwd_ctx.hash("Staff123!"),   role=Role.staff,  is_active=True),
+                User(email="client@tennis.com",  hashed_password=pwd_ctx.hash("Client123!"),  role=Role.client, is_active=True),
+                User(email="client2@tennis.com", hashed_password=pwd_ctx.hash("Client123!"),  role=Role.client, is_active=True),
             ]
             db.add_all(users_seed)
             await db.commit()

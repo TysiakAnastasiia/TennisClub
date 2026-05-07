@@ -20,6 +20,7 @@ class BookingOut(BaseModel):
     status: BookingStatus
     total_price: float
     notes: Optional[str]
+    is_paid: bool
     created_at: datetime
 
     class Config:

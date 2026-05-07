@@ -70,12 +70,20 @@ class BookingService:
         return result.scalar_one_or_none() is not None
 
     async def create_booking(self, user_id: int, user_email: str, data: dict, db: AsyncSession) -> Booking:
+        from datetime import timezone
         start = data["start_time"]
         end   = data["end_time"]
 
-        if start >= end:
+        # Make timezone-aware for comparison
+        now = datetime.now(timezone.utc)
+        s = start.replace(tzinfo=timezone.utc) if start.tzinfo is None else start
+        e = end.replace(tzinfo=timezone.utc)   if end.tzinfo   is None else end
+
+        if s <= now:
+            raise ValueError("Час бронювання має бути у майбутньому")
+        if s >= e:
             raise ValueError("Start must be before end")
-        if (end - start).seconds < 3600:
+        if (e - s).seconds < 3600 and (e - s).days == 0:
             raise ValueError("Minimum booking duration is 1 hour")
 
         court = await self.get_court_info(data["club_id"], data["court_id"])

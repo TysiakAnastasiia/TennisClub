@@ -21,3 +21,13 @@ class ProfileOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+class MembershipOut(BaseModel):
+    id: int
+    user_id: int
+    club_id: int
+    club_name: str
+    joined_at: datetime
+
+    class Config:
+        from_attributes = True

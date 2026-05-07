@@ -11,8 +11,8 @@ export default function ClubDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuthStore()
-  const [club, setClub] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [club, setClub]           = useState(null)
+  const [loading, setLoading]     = useState(true)
   const [selectedCourt, setSelectedCourt] = useState(null)
   const [showModal, setShowModal] = useState(false)
 
@@ -44,9 +44,7 @@ export default function ClubDetail() {
         }
         <div className="club-hero-overlay" />
         <div className="club-hero-content">
-          <button className="btn btn-ghost btn-sm back-btn" onClick={() => navigate('/clubs')}>
-            ← Назад
-          </button>
+          <button className="btn btn-ghost btn-sm back-btn" onClick={() => navigate('/clubs')}>← Назад</button>
           <h1 className="club-hero-title">{club.name}</h1>
           <p className="club-hero-addr">📍 {club.address}</p>
         </div>
@@ -63,6 +61,11 @@ export default function ClubDetail() {
 
       {/* Courts */}
       <h2 className="courts-heading">Корти</h2>
+      {!club.is_active && (
+        <div style={{ background:'#fee2e2', border:'1px solid #fca5a5', borderRadius:'var(--radius-sm)', padding:'12px 16px', marginBottom:20, color:'#991b1b', fontSize:14 }}>
+          ⚠️ Цей клуб наразі неактивний. Бронювання тимчасово недоступне.
+        </div>
+      )}
       {courts.length === 0 ? (
         <div className="empty-state"><p>Кортів поки немає</p></div>
       ) : (
@@ -82,8 +85,9 @@ export default function ClubDetail() {
               </div>
               <button
                 className="btn btn-primary w-full"
-                style={{ borderRadius: '0 0 12px 12px', margin: 0 }}
+                style={{ borderRadius:'0 0 12px 12px', margin:0, justifyContent:'center' }}
                 onClick={() => openBooking(court)}
+                disabled={!club.is_active}
               >
                 Забронювати
               </button>
@@ -105,7 +109,7 @@ export default function ClubDetail() {
         .club-hero { position:relative; height:320px; border-radius:var(--radius); overflow:hidden; margin-bottom:32px; }
         .club-hero-img { width:100%; height:100%; object-fit:cover; }
         .club-hero-placeholder { width:100%; height:100%; background:var(--emerald-50); display:flex; align-items:center; justify-content:center; font-size:64px; }
-        .club-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(2,44,34,0.7) 0%, transparent 50%); }
+        .club-hero-overlay { position:absolute; inset:0; background:linear-gradient(to top,rgba(2,44,34,0.7) 0%,transparent 50%); }
         .club-hero-content { position:absolute; bottom:28px; left:28px; right:28px; }
         .back-btn { color:rgba(255,255,255,0.8); margin-bottom:8px; }
         .back-btn:hover { color:white; background:rgba(255,255,255,0.1); }
@@ -131,15 +135,16 @@ export default function ClubDetail() {
 function BookingModal({ court, clubId, onClose, onDone }) {
   const now = startOfHour(addHours(new Date(), 1))
   const [startTime, setStartTime] = useState(format(now, "yyyy-MM-dd'T'HH:mm"))
-  const [endTime, setEndTime] = useState(format(addHours(now, 1), "yyyy-MM-dd'T'HH:mm"))
-  const [notes, setNotes] = useState('')
-  const [loading, setLoading] = useState(false)
+  const [endTime, setEndTime]     = useState(format(addHours(now, 1), "yyyy-MM-dd'T'HH:mm"))
+  const [notes, setNotes]         = useState('')
+  const [loading, setLoading]     = useState(false)
 
   const hours = (new Date(endTime) - new Date(startTime)) / 3600000
   const total = Math.max(0, hours * court.price_per_hour)
 
   const submit = async () => {
     if (hours < 1) { toast.error('Мінімум 1 година'); return }
+    if (new Date(startTime) <= new Date()) { toast.error('Час бронювання має бути у майбутньому'); return }
     setLoading(true)
     try {
       await bookingApi.create({
@@ -149,14 +154,14 @@ function BookingModal({ court, clubId, onClose, onDone }) {
         end_time: new Date(endTime).toISOString(),
         notes,
       })
-      toast.success('Бронювання підтверджено! 🎾')
+      toast.success('Бронювання підтверджено! Підтвердження на email 🎾')
       onDone()
     } catch (err) {
       toast.error(err.response?.data?.detail || 'Помилка бронювання')
-    } finally {
-      setLoading(false)
-    }
+    } finally { setLoading(false) }
   }
+
+  const minDate = format(new Date(), "yyyy-MM-dd'T'HH:mm")
 
   return (
     <div className="modal-overlay" onClick={onClose}>
@@ -164,31 +169,18 @@ function BookingModal({ court, clubId, onClose, onDone }) {
         <h2 className="modal-title">Бронювання · {court.name}</h2>
         <div className="form-group">
           <label className="label">Початок</label>
-          <input
-            className="input-field"
-            type="datetime-local"
-            value={startTime}
-            onChange={e => setStartTime(e.target.value)}
-          />
+          <input className="input-field" type="datetime-local" value={startTime} min={minDate}
+            onChange={e => setStartTime(e.target.value)} />
         </div>
         <div className="form-group">
           <label className="label">Кінець</label>
-          <input
-            className="input-field"
-            type="datetime-local"
-            value={endTime}
-            onChange={e => setEndTime(e.target.value)}
-          />
+          <input className="input-field" type="datetime-local" value={endTime} min={startTime}
+            onChange={e => setEndTime(e.target.value)} />
         </div>
         <div className="form-group">
           <label className="label">Нотатки (необов'язково)</label>
-          <input
-            className="input-field"
-            type="text"
-            placeholder="Наприклад: парна гра"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-          />
+          <input className="input-field" type="text" placeholder="Наприклад: парна гра"
+            value={notes} onChange={e => setNotes(e.target.value)} />
         </div>
         {hours > 0 && (
           <div className="booking-total">
@@ -197,22 +189,14 @@ function BookingModal({ court, clubId, onClose, onDone }) {
           </div>
         )}
         <div className="flex gap-3 mt-4">
-          <button className="btn btn-outline w-full" onClick={onClose}>Скасувати</button>
-          <button className="btn btn-primary w-full" onClick={submit} disabled={loading}>
+          <button className="btn btn-outline w-full" style={{ justifyContent:'center' }} onClick={onClose}>Скасувати</button>
+          <button className="btn btn-primary w-full" style={{ justifyContent:'center' }} onClick={submit} disabled={loading}>
             {loading ? 'Бронюємо...' : 'Підтвердити'}
           </button>
         </div>
-
         <style>{`
-          .booking-total {
-            display:flex; justify-content:space-between; align-items:center;
-            background:var(--emerald-50); border-radius:var(--radius-sm);
-            padding:12px 16px; font-size:14px; color:var(--gray-600);
-          }
-          .booking-total-price {
-            font-family:'Cormorant Garamond',serif; font-size:24px;
-            color:var(--emerald-800); font-weight:500;
-          }
+          .booking-total { display:flex; justify-content:space-between; align-items:center; background:var(--emerald-50); border-radius:var(--radius-sm); padding:12px 16px; font-size:14px; color:var(--gray-600); }
+          .booking-total-price { font-family:'Cormorant Garamond',serif; font-size:24px; color:var(--emerald-800); font-weight:500; }
         `}</style>
       </div>
     </div>

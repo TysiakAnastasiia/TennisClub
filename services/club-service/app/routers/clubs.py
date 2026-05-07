@@ -30,37 +30,30 @@ async def get_club(club_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("", response_model=ClubOut, status_code=201)
-async def create_club(
-    body: ClubCreate,
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff_or_admin),
-):
+async def create_club(body: ClubCreate, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
     club = Club(**body.model_dump())
     db.add(club)
     await db.commit()
     await db.refresh(club)
-    return club
+    # reload with courts
+    result = await db.execute(select(Club).where(Club.id == club.id).options(selectinload(Club.courts)))
+    return result.scalar_one()
 
 
 @router.put("/{club_id}", response_model=ClubOut)
-async def update_club(
-    club_id: int,
-    body: ClubCreate,
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff_or_admin),
-):
+async def update_club(club_id: int, body: ClubCreate, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
     club = await db.get(Club, club_id)
     if not club:
         raise HTTPException(404, "Club not found")
     for k, v in body.model_dump().items():
         setattr(club, k, v)
     await db.commit()
-    await db.refresh(club)
-    return club
+    result = await db.execute(select(Club).where(Club.id == club_id).options(selectinload(Club.courts)))
+    return result.scalar_one()
 
 
 @router.delete("/{club_id}", status_code=204)
-async def delete_club(club_id: int, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
+async def deactivate_club(club_id: int, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
     club = await db.get(Club, club_id)
     if club:
         club.is_active = False
@@ -78,12 +71,7 @@ async def list_courts(club_id: int, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/{club_id}/courts", response_model=CourtOut, status_code=201)
-async def add_court(
-    club_id: int,
-    body: CourtCreate,
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff_or_admin),
-):
+async def add_court(club_id: int, body: CourtCreate, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
     court = Court(club_id=club_id, **body.model_dump())
     db.add(court)
     await db.commit()
@@ -91,13 +79,20 @@ async def add_court(
     return court
 
 
+@router.put("/{club_id}/courts/{court_id}", response_model=CourtOut)
+async def update_court(club_id: int, court_id: int, body: CourtCreate, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
+    court = await db.get(Court, court_id)
+    if not court or court.club_id != club_id:
+        raise HTTPException(404, "Court not found")
+    for k, v in body.model_dump().items():
+        setattr(court, k, v)
+    await db.commit()
+    await db.refresh(court)
+    return court
+
+
 @router.delete("/{club_id}/courts/{court_id}", status_code=204)
-async def delete_court(
-    club_id: int,
-    court_id: int,
-    db: AsyncSession = Depends(get_db),
-    _=Depends(require_staff_or_admin),
-):
+async def delete_court(club_id: int, court_id: int, db: AsyncSession = Depends(get_db), _=Depends(require_staff_or_admin)):
     court = await db.get(Court, court_id)
     if court:
         court.is_active = False
