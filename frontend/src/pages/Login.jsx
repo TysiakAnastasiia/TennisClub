@@ -1,33 +1,36 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import { authApi } from '../api'
-import { useAuthStore } from '../store/authStore'
-import toast from 'react-hot-toast'
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { Link, useNavigate } from "react-router-dom";
+import { authApi } from "../api";
+import { useAuthStore } from "../store/authStore";
 
 export default function Login() {
-  const [form, setForm] = useState({ email: '', password: '' })
-  const [loading, setLoading] = useState(false)
-  const [showPw, setShowPw] = useState(false)
-  const [error, setError] = useState('')
-  const { login } = useAuthStore()
-  const navigate = useNavigate()
+  const [form, setForm] = useState({ email: "", password: "" });
+  const [loading, setLoading] = useState(false);
+  const [showPw, setShowPw] = useState(false);
+  const [error, setError] = useState("");
+  const { login } = useAuthStore();
+  const navigate = useNavigate();
 
   const handle = async (e) => {
-    e.preventDefault()
-    setError('')
-    setLoading(true)
+    e.preventDefault();
+    e.stopPropagation();
+    setError("");
+    setLoading(true);
     try {
-      const { data } = await authApi.login(form)
-      login(data.access_token, data.role, form.email)
-      toast.success('Ласкаво просимо!')
-      setTimeout(() => navigate('/'), 300)
+      const { data } = await authApi.login(form);
+      login(data.access_token, data.role, form.email);
+      toast.success("Ласкаво просимо!");
+      setTimeout(() => navigate("/"), 300);
     } catch (err) {
-      const msg = err.response?.data?.detail || 'Невірний email або пароль'
-      setError(msg)
+      const msg = err.response?.data?.detail || "Невірний email або пароль";
+      setError(msg);
+      return false; // Запобігає перезавантаженню
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+    return false; // Додатковий захист
+  };
 
   return (
     <div className="auth-page">
@@ -38,11 +41,7 @@ export default function Login() {
           <p>Ласкаво просимо назад</p>
         </div>
 
-        {error && (
-          <div className="auth-error">
-            ⚠️ {error}
-          </div>
-        )}
+        {error && <div className="auth-error">⚠️ {error}</div>}
 
         <form onSubmit={handle} noValidate>
           <div className="form-group">
@@ -52,7 +51,10 @@ export default function Login() {
               type="email"
               placeholder="your@email.com"
               value={form.email}
-              onChange={e => { setForm({ ...form, email: e.target.value }); setError('') }}
+              onChange={(e) => {
+                setForm({ ...form, email: e.target.value });
+                setError("");
+              }}
               required
             />
           </div>
@@ -61,20 +63,31 @@ export default function Login() {
             <div className="pw-wrap">
               <input
                 className="input-field"
-                type={showPw ? 'text' : 'password'}
+                type={showPw ? "text" : "password"}
                 placeholder="••••••••"
                 value={form.password}
-                onChange={e => { setForm({ ...form, password: e.target.value }); setError('') }}
+                onChange={(e) => {
+                  setForm({ ...form, password: e.target.value });
+                  setError("");
+                }}
                 required
               />
-              <button type="button" className="pw-toggle" onClick={() => setShowPw(!showPw)}>
-                {showPw ? '🙈' : '👁️'}
+              <button
+                type="button"
+                className="pw-toggle"
+                onClick={() => setShowPw(!showPw)}
+              >
+                {showPw ? "🙈" : "👁️"}
               </button>
             </div>
           </div>
-          <button className="btn btn-primary w-full" type="submit" disabled={loading}
-            style={{ justifyContent: 'center' }}>
-            {loading ? 'Входимо...' : 'Увійти'}
+          <button
+            className="btn btn-primary w-full"
+            type="submit"
+            disabled={loading}
+            style={{ justifyContent: "center" }}
+          >
+            {loading ? "Входимо..." : "Увійти"}
           </button>
         </form>
 
@@ -82,10 +95,14 @@ export default function Login() {
           Немає акаунту? <Link to="/register">Зареєструватись</Link>
         </p>
         <div className="auth-hint">
-          <p className="text-xs text-muted" style={{ marginBottom: 6 }}>Тестові акаунти:</p>
+          <p className="text-xs text-muted" style={{ marginBottom: 6 }}>
+            Тестові акаунти:
+          </p>
           <p className="text-xs text-muted">👑 admin@tennis.com / Admin123!</p>
           <p className="text-xs text-muted">🔧 staff@tennis.com / Staff123!</p>
-          <p className="text-xs text-muted">🎾 client@tennis.com / Client123!</p>
+          <p className="text-xs text-muted">
+            🎾 client@tennis.com / Client123!
+          </p>
         </div>
       </div>
 
@@ -105,5 +122,5 @@ export default function Login() {
         .pw-toggle { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:16px; padding:2px; line-height:1; }
       `}</style>
     </div>
-  )
+  );
 }
