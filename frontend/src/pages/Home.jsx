@@ -42,17 +42,27 @@ export default function Home() {
           </div>
         </div>
         <div className="hero-visual">
-          <div className="court-diagram">
-            <div className="court-line baseline top" />
-            <div className="court-line baseline bot" />
-            <div className="court-line sideline left" />
-            <div className="court-line sideline right" />
-            <div className="court-line center-h" />
-            <div className="court-line service-left"  />
-            <div className="court-line service-right" />
-            <div className="court-line center-v-top"  />
-            <div className="court-net" />
-            <div className="ball" />
+          <div className="photo-stack">
+
+            {/* Фото ззаду зліва */}
+            <div className="photo-card photo-back-left">
+              <img src="https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?w=600&q=80" alt="" />
+            </div>
+
+            {/* Фото ззаду справа */}
+            <div className="photo-card photo-back-right">
+              <img src="https://images.unsplash.com/photo-1632755898125-36cd72575dde?q=80&w=987&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="" />
+            </div>
+
+            {/* Головне фото спереду */}
+            <div className="photo-card photo-front">
+              <img src="/hero-court.jpg" alt="Tennis Court" />
+              <div className="photo-front-badge">
+                <span>🎾</span>
+                <span>Смарагдовий Корт · Львів</span>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
@@ -113,7 +123,7 @@ export default function Home() {
         .hero {
           position: relative; min-height: calc(100vh - 64px);
           display: flex; align-items: center; overflow: hidden;
-          padding: 80px 24px;
+          padding: 100px max(32px, 6vw) 100px max(48px, 8vw);
         }
         .hero-bg { position: absolute; inset: 0; pointer-events: none; }
         .hero-orb {
@@ -170,52 +180,74 @@ export default function Home() {
         }
         .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
 
-        /* Court diagram */
+        /* Hero photo stack */
         .hero-visual {
-          position: absolute; right: 8%; top: 50%;
+          position: absolute; right: calc(4% + 70px); top: 50%;
           transform: translateY(-50%);
-          display: flex; align-items: center; justify-content: center;
-          opacity: 0.15;
+          width: min(460px, 38vw);
+          height: 560px;
         }
-        .court-diagram {
-          width: 280px; height: 360px; position: relative;
-          border: 2px solid var(--emerald-600);
-          animation: courtFloat 6s ease-in-out infinite;
+        .photo-stack { position: relative; width: 100%; height: 100%; }
+
+        .photo-card {
+          position: absolute;
+          background: white;
+          padding: 8px 8px 36px;
+          border-radius: 3px;
+          box-shadow: 0 24px 64px rgba(0,0,0,0.18), 0 4px 16px rgba(0,0,0,0.12);
         }
-        @keyframes courtFloat {
-          0%, 100% { transform: translateY(0) rotate(-8deg); }
-          50%       { transform: translateY(-16px) rotate(-8deg); }
+        .photo-card img {
+          display: block; object-fit: cover;
+          border-radius: 1px;
         }
-        .court-line {
-          position: absolute; background: var(--emerald-600);
+
+        /* Фото ззаду зліва */
+        .photo-back-left {
+          top: -30px; left: -50px;
+          transform: rotate(6deg);
+          z-index: 1;
+          animation: floatA 8s ease-in-out infinite;
         }
-        .baseline { height: 2px; left: 0; right: 0; }
-        .baseline.top { top: 30px; }
-        .baseline.bot { bottom: 30px; }
-        .sideline { width: 2px; top: 30px; bottom: 30px; }
-        .sideline.left  { left: 40px; }
-        .sideline.right { right: 40px; }
-        .center-h { height: 2px; left: 0; right: 0; top: 50%; }
-        .service-left  { height: 2px; left: 40px; right: 50%; top: 35%; }
-        .service-right { height: 2px; left: 50%; right: 40px; bottom: 35%; }
-        .center-v-top { width: 2px; left: 50%; top: 30px; bottom: 50%; }
-        .court-net {
-          position: absolute; left: 0; right: 0; top: calc(50% - 4px);
-          height: 8px; background: repeating-linear-gradient(
-            90deg, var(--emerald-400) 0, var(--emerald-400) 4px, transparent 4px, transparent 8px
-          );
+        .photo-back-left img { width: 260px; height: 340px; }
+
+        /* Фото ззаду справа */
+        .photo-back-right {
+          bottom: -20px; right: -50px;
+          transform: rotate(-5deg);
+          z-index: 2;
+          animation: floatB 9s ease-in-out infinite;
         }
-        .ball {
-          position: absolute; width: 16px; height: 16px;
-          background: #c8f500; border-radius: 50%;
-          top: 38%; left: 35%;
-          animation: ballMove 3s ease-in-out infinite;
-          box-shadow: 0 0 8px rgba(200,245,0,0.6);
+        .photo-back-right img { width: 240px; height: 310px; }
+
+        /* Головне фото */
+        .photo-front {
+          top: 50%; left: 50%;
+          transform: translate(-44%, -50%) rotate(-2.5deg);
+          z-index: 3;
+          animation: floatC 7s ease-in-out infinite;
+          overflow: hidden;
+          padding-bottom: 44px;
         }
-        @keyframes ballMove {
-          0%   { top: 38%; left: 35%; }
-          50%  { top: 58%; left: 62%; }
-          100% { top: 38%; left: 35%; }
+        .photo-front img { width: 300px; height: 390px; }
+
+        .photo-front-badge {
+          position: absolute; bottom: 8px; left: 8px; right: 8px;
+          display: flex; align-items: center; gap: 6px;
+          font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+          color: #555; justify-content: center;
+        }
+
+        @keyframes floatA {
+          0%, 100% { transform: rotate(6deg) translateY(0); }
+          50%       { transform: rotate(6deg) translateY(-8px); }
+        }
+        @keyframes floatB {
+          0%, 100% { transform: rotate(-5deg) translateY(0); }
+          50%       { transform: rotate(-5deg) translateY(-6px); }
+        }
+        @keyframes floatC {
+          0%, 100% { transform: translate(-44%, -50%) rotate(-2.5deg) translateY(0); }
+          50%       { transform: translate(-44%, -50%) rotate(-2.5deg) translateY(-10px); }
         }
 
         /* Stats */
