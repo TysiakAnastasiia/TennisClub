@@ -13,7 +13,7 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 SECRET = os.getenv("JWT_SECRET", "my-super-secret-jwt-key-1234567890-abcdefghijklmnopqrstuvwxyz")
 
 def _admin_only(authorization: str | None = None):
-    pass  # checked inline below
+    pass  
 
 class RoleUpdate(BaseModel):
     role: Role

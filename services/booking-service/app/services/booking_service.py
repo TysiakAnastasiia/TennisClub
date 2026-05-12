@@ -44,18 +44,20 @@ class BookingBuilder:
 
 
 class BookingService:
-    """Facade over booking creation with validation."""
+    """Патерн Facade: приховує складність створення бронювань з валідацією."""
 
     async def get_court_info(self, club_id: int, court_id: int) -> dict:
-        async with httpx.AsyncClient(timeout=5) as client:
+        # Отримуємо інформацію про корт з club-service
+        async with httpx.AsyncClient(timeout=5) as client: #асинхронний запит до іншого сервісу
             resp = await client.get(f"{CLUB_SERVICE_URL}/clubs/{club_id}/courts")
-            resp.raise_for_status()
+            resp.raise_for_status() #перевірка на помилки
             courts = resp.json()
             for c in courts:
-                if c["id"] == court_id:
-                    return c
-        raise ValueError("Court not found")
+                if c["id"] == court_id: 
+                    return c  # Повертаємо знайдений корт
+        raise ValueError("Court not found")  # Якщо корт не знайдено
 
+    #Перевіряє конфлікти бронювань для запобігання подвійного бронювання
     async def check_conflict(self, court_id: int, start: datetime, end: datetime, db: AsyncSession) -> bool:
         result = await db.execute(
             select(Booking).where(
