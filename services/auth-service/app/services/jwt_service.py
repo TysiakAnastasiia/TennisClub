@@ -2,7 +2,8 @@ import os, jwt
 from datetime import datetime, timedelta, timezone
 
 class JWTManager:
-    """Singleton: one shared JWT manager across the app."""
+    """Singleton. Використовує __new__ для перехоплення створення об'єкта:
+        якщо екземпляр вже існує, повертає його замість створення нового."""
     _instance = None
 
     def __new__(cls):

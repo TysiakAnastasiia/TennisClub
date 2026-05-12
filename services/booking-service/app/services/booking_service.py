@@ -9,7 +9,10 @@ NOTIFICATION_URL      = os.getenv("NOTIFICATION_SERVICE_URL", "http://notificati
 
 
 class BookingBuilder:
-    """Builder pattern: step-by-step construction of a valid Booking."""
+    """
+    Патерн Builder: дозволяє покроково конструювати складний об'єкт Booking.
+    Відокремлює логіку розрахунку вартості та підготовки даних від самого класу моделі.
+    """
 
     def __init__(self):
         self._data: dict = {}
@@ -44,7 +47,11 @@ class BookingBuilder:
 
 
 class BookingService:
-    """Патерн Facade: приховує складність створення бронювань з валідацією."""
+    """
+    Патерн Facade: єдина точка входу для роботи з бронюваннями.
+    Приховує складну бізнес-логіку: валідацію часу, перевірку конфліктів у БД, 
+    запити до зовнішніх мікросервісів та процес створення об'єкта.
+    """
 
     async def get_court_info(self, club_id: int, court_id: int) -> dict:
         # Отримуємо інформацію про корт з club-service

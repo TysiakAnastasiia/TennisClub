@@ -12,7 +12,11 @@ NOTIFICATION_URL = os.getenv("NOTIFICATION_SERVICE_URL", "http://notification-se
 
 
 class AuthFacade:
-    """Патерн Facade: приховує складність реєстрації/логіну та створення токенів."""
+    """
+    Facade: Надає простий інтерфейс для складних процесів автентифікації.
+    Агрегує роботу з базою даних, хешуванням паролів, генерацією JWT 
+    та взаємодією із зовнішнім сервісом сповіщень.
+    """
 
     async def register(self, email: str, password: str, role: Role, db: AsyncSession) -> User:
         # Перевіряємо чи email вже зареєстровано

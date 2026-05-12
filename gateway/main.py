@@ -23,7 +23,11 @@ SERVICES = {
 }
 
 def resolve_service(path: str) -> tuple[str, str]:
-    """Facade pattern: resolves which service handles the path."""
+    """
+    API Gateway (Facade): Єдина точка входу для мікросервісної архітектури.
+    Проксіює запити до відповідних сервісів, приховуючи топологію мережі 
+    та складність внутрішньої інфраструктури від клієнта.
+    """
     segment = path.strip("/").split("/")[0]
     if segment in SERVICES:
         return SERVICES[segment], path

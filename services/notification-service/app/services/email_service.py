@@ -11,7 +11,12 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 
 class EmailSender:
-    """Singleton email sender."""
+    """"
+    Сервіс для асинхронної відправки Email (Singleton).
+    Використовує єдиний екземпляр для всіх розсилок у додатку, 
+    що дозволяє централізовано керувати налаштуваннями SMTP.
+    """
+    
     _instance = None
 
     def __new__(cls):
